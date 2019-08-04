@@ -13,7 +13,6 @@ class Hangman
     @user_word = ""
     
     main_menu
-    
   end
 
 class Person
@@ -47,7 +46,7 @@ end
           place_bet
           end
         when "2"
-          # Casino.new(@person.wallet)
+          puts "Thank you for playing. We hope to see you again soon!"
           @still_running = false
         else
           clear
@@ -87,16 +86,19 @@ end
         puts "You do not have enough money to make that bet.".colorize(:red)
         puts "You have $#{@person.wallet} in your wallet for betting.".colorize(:red)
         stars
-        puts "Would you like to make a withdrawl to add more money to your wallet? (Y/N) "
+        puts "Would you like to make an ATM withdrawl to add more money to your wallet? (Y/N) "
         answer = gets.strip.downcase
         if answer == "y"
           clear
-          prints "ATM: 'How much would you like to withdraw?' $".colorize(:green)
-          
-          @person.wallet += @bet
+          print "ATM: 'How much would you like to withdraw?' $".colorize(:green)
+          amount = gets.strip.to_i
+          @person.wallet += amount
+          print "You have successfully withdrawn $#{amount}. Thank you."
+          place_bet
         else
+          puts "Thank you for playing. We hope to see you again soon!"
+          @still_running = false
         end
-        place_bet
       else
       generate_word
       end
