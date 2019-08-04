@@ -7,19 +7,26 @@ require 'colorize'
 # require 'pry'
 
 class Hangman
-  attr_accessor :letters_left, :hangman_wallet
-  def initialize(wallet)
+  attr_accessor :letters_left
+  def initialize
     @letters_left = ('a'..'z').to_a.join(" ")
     @user_word = ""
-    @wallet = wallet
-
+    
     main_menu
-
+    
   end
 
+class Person
+  attr_accessor :person_name, :wallet
+  def initialize(name, wallet)
+    @person_name = name
+    @wallet = wallet
+  end
+end
+
   def main_menu 
-    still_running = true
-    while still_running
+    @still_running = true
+    while @still_running
       clear
       stars
       hang_ascii
@@ -29,17 +36,19 @@ class Hangman
       user_choice = get_menu_choice 
       case user_choice
         when "1"
-          if @wallet <= 0
+          @person = init_person()
+          if @person.wallet <= 0
             puts 'Your wallet is empty.'
-            puts "Press enter to go back to the Casino to get more money."
-            gets
-            Casino.new(@wallet)
+            # puts "Press enter to go back to the Casino to get more money."
+            # gets
+            # Casino.new(@person.wallet)
+            main_menu
           else
           place_bet
           end
         when "2"
-          Casino.new(@wallet)
-          # still_running = false
+          # Casino.new(@person.wallet)
+          @still_running = false
         else
           clear
           stars
@@ -55,8 +64,16 @@ class Hangman
 
   def get_menu_choice
     puts "1) New Game"
-    puts "2) Exit To Casino"
+    puts "2) Exit"
     gets.strip
+  end
+
+  def init_person
+    print "Please enter your name: "
+    name = gets.strip
+    print "Hello #{name}! Please enter your available funds: $"
+    wallet = gets.to_i
+    customer = Person.new(name, wallet)
   end
 
   def place_bet
@@ -64,14 +81,21 @@ class Hangman
     puts "How much would you like to bet?"
     print ">$ "
     @bet = gets.strip.to_i
-    if @bet > @wallet
+    if @bet > @person.wallet
         clear
         stars
         puts "You do not have enough money to make that bet.".colorize(:red)
-        puts "You have $#{@wallet} in your wallet for betting.".colorize(:red)
+        puts "You have $#{@person.wallet} in your wallet for betting.".colorize(:red)
         stars
-        puts "Press enter to continue."
-        gets
+        puts "Would you like to make a withdrawl to add more money to your wallet? (Y/N) "
+        answer = gets.strip.downcase
+        if answer == "y"
+          clear
+          prints "ATM: 'How much would you like to withdraw?' $".colorize(:green)
+          
+          @person.wallet += @bet
+        else
+        end
         place_bet
       else
       generate_word
@@ -165,26 +189,39 @@ class Hangman
       puts
       puts "GAME OVER".colorize(:red)
       puts "You ran out of guesses! Your man hangs!"
-      @wallet -= @bet
+      @person.wallet -= @bet
       puts "You lose $#{@bet}!"
-      puts "You now have a total of $#{@wallet} in your wallet."
+      puts "You now have a total of $#{@person.wallet} in your wallet."
       # puts your wallet total is now:
       puts "Your word was #{@game_word.colorize(:yellow)}."
       hang_ascii
-      puts "Press enter to return to the main menu.".colorize(:red)
-      gets
-      reset
-      main_menu
-      else
-        puts "\nCONGRATULATIONS!".colorize(:green)
-        puts "You guessed the word! Your man goes free!"
-        @wallet += @bet
-        puts "You win $#{@bet}!"
-        puts "You now have a total of $#{@wallet} in your wallet."
-        puts "Press enter to return to the main menu.".colorize(:red)
-        gets
+      puts "Would you like to play again? (Y/N) ".colorize(:red)
+      answer = gets.strip.downcase
+      if answer == "y"
         reset
-        main_menu
+        place_bet
+      else
+        puts "You are leaving with a total of $#{@person.wallet} in your wallet."
+        puts "Come back soon!"
+        @still_running = false
+      end
+
+    else
+      puts "\nCONGRATULATIONS!".colorize(:green)
+      puts "You guessed the word! Your man goes free!"
+      @person.wallet += @bet
+      puts "You win $#{@bet}!"
+      puts "You now have a total of $#{@person.wallet} in your wallet."
+      puts "Would you like to play again? (Y/N) ".colorize(:red)
+      answer = gets.strip.downcase
+      if answer == "y"
+        reset
+        place_bet
+      else
+        puts "You are leaving with a total of $#{@person.wallet} in your wallet."
+        puts "Come back soon!"
+        @still_running = false
+      end
     end
   end
 
@@ -192,11 +229,6 @@ class Hangman
     @letters_left = ('a'..'z').to_a.join(" ")
     @user_word = ""
   end
-
-  # def exit_to_casino
-  #   puts "We hope to see you again soon! Goodbye!"
-  #   # Casino.main_menu
-  # end
 
   def add_word
   end
